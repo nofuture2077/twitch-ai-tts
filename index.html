@@ -14,6 +14,7 @@
         let config = {
             "channel": "..", // Twitch channel name
             "apiKey": "...", // elevenlabs API Key
+            "model": "",
             "voice": {
                 "bits": {
                     "min": 1,           // min amount for cheer TTS
@@ -43,7 +44,7 @@
         let cheerPrefixesRegExp = cheerPrefixes.map(x => new RegExp(x + "\\d+", "gi"))
 
         function textToSpeech(text, voice_id, similarity, stability, style) {;
-            let model_id = 'eleven_monolingual_v1';
+            let model_id = config.model;
             return new Promise((resolve, fail) => {
                 const options = {
                     method: 'POST',

@@ -6,6 +6,7 @@ Using https://elevenlabs.io/ services
 let config = {
     "channel": "..", // Twitch channel name
     "apiKey": "...", // elevenlabs API Key
+    "model: "",      // model to use
     "voice": {
         "bits": {
             "min": 1,           // min amount for cheer TTS
