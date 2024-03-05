@@ -121,8 +121,8 @@
                     if (!message.tags.username || !msg) {
                         return;
                     }
-
-                    if (message.bits && config.voice.bits && message.bits >= config.voice.bits.min) {
+                    let messageBits = message.bits || 0;
+                    if (config.voice.bits && messageBits >= config.voice.bits.min) {
                         let voice = config.voice.bits[message.bits] || config.voice.bits.default;
                         let ttsItem = {
                             msg: cleanMessage(msg), 
