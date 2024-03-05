@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>AI TTS - ScamMedian 2000</title>
+    <title>AI TTS - ScamMedia 2000</title>
     <meta charset="UTF-8">
     <script src="lib/twitch.js"></script>
 
@@ -39,6 +39,8 @@
         let archive = {};
         let playing = false;
         let index = 0;
+        let cheerPrefixes = ["cheer"];
+        let cheerPrefixesRegExp = cheerPrefixes.map(x => new RegExp(x + "\\d+", "gi"))
 
         function textToSpeech(text, voice_id, similarity, stability, style) {;
             let model_id = 'eleven_monolingual_v1';
@@ -95,6 +97,13 @@
                 app.appendChild(div);
             }
 
+            function cleanMessage(message) {
+                return cheerPrefixesRegExp.reduce(
+                    (accumulator, prefix) => accumulator.replaceAll(prefix, ""),
+                    message
+                );
+            }
+
             const run = async () => {
                 client.on("*", (message) => {
                     console.log(JSON.stringify(message, null, 4));
@@ -116,7 +125,7 @@
                     if (message.bits && config.voice.bits && message.bits >= config.voice.bits.min) {
                         let voice = config.voice.bits[message.bits] || config.voice.bits.default;
                         let ttsItem = {
-                            msg: msg, 
+                            msg: cleanMessage(msg), 
                             user: message.tags.username, 
                             id: message.tags.id, 
                             voice: voice.id, 
