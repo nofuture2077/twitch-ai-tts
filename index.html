@@ -19,6 +19,7 @@
                 "bits": {
                     "min": 1,           // min amount for cheer TTS
                     "default": {        // use this AI voice as fallback
+                        "name": "....",
                         "id": "....",
                         "similiarity": 0.8,
                         "stability": 0.7,
@@ -42,6 +43,18 @@
         let index = 0;
         let cheerPrefixes = ["cheer"];
         let cheerPrefixesRegExp = cheerPrefixes.map(x => new RegExp(x + "\\d+", "gi"))
+
+        function getVoiceByName(name) {
+            for (const key in config.voice.bits) {
+                if (config.voice.bits.hasOwnProperty(key)) {
+                    if (config.voice.bits[key].name === name.toLowerCase()) {
+                        return config.voice.bits[key];
+                    }
+                }
+            }
+
+            return config.voice.bits.default;
+        }
 
         function textToSpeech(text, voice_id, similarity, stability, style) {;
             let model_id = config.model;
@@ -117,7 +130,7 @@
                         return;
                     }
 
-                    let isMod = message.tags.mod || message.tags.badges.broadcaster;
+                    let isMod = message.tags.mod === "1" || message.tags.badges.broadcaster;
 
                     if (!message.tags.username || !msg) {
                         return;
@@ -136,6 +149,22 @@
                         };
                         queue.push(ttsItem)
                         archive[ttsItem.id] = ttsItem;
+                    } else if (config.voice.bits.mods && isMod) {
+                        let parts = msg.trim().split(" ");
+                        if (parts[0] === '!tts') {
+                            let voice = getVoiceByName(parts[1]);
+                            let ttsItem = {
+                                msg: cleanMessage(parts.slice(2).join(" ")), 
+                                user: message.tags.username, 
+                                id: message.tags.id, 
+                                voice: voice.id, 
+                                similarity: voice.similarity,
+                                stability: voice.stability,
+                                style: voice.style
+                            };
+                            queue.push(ttsItem)
+                            archive[ttsItem.id] = ttsItem;
+                        }
                     }
 
                     if (isMod && msg.indexOf('replay') > -1) {
