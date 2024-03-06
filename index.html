@@ -10,6 +10,7 @@
         let configString = getQueryVariable(query, 'c');
         let config = JSON.parse(atob(configString));
         console.log(config);
+        
         /*
         let config = {
             "channel": "..", // Twitch channel name
@@ -40,6 +41,8 @@
         let queue = [];
         let archive = {};
         let playing = false;
+        let mute = false;
+        let audio = null;
         let index = 0;
         let cheerPrefixes = ["cheer"];
         let cheerPrefixesRegExp = cheerPrefixes.map(x => new RegExp(x + "\\d+", "gi"))
@@ -78,8 +81,8 @@
 
         function playAudio(src, startCB, endCB, minDuration, volume) {
             !src && (startCB() & endCB());
-            const audio = new Audio(src)
-            audio.volume = volume || 1.0
+            audio = new Audio(src)
+            audio.volume = mute ? 0.0 : (volume || 1.0)
 
             audio.onloadedmetadata = () => {
                 const duration = audio.duration;
@@ -174,6 +177,13 @@
                         }
                     }
 
+                    if (isMod && (msg.toLowerCase().indexOf('skip') === 0 || msg.toLowerCase().indexOf('mute') === 0)) {
+                        mute = true
+                        if (audio) {
+                            audio.volume = 0.0;
+                        }
+                    }
+
                     addMessage(message.tags.username, channel, msg, message.tags.displayName, message.tags.color);
                 });
 
@@ -202,7 +212,10 @@
                     item.stability || 0.8,
                     item.style || 0.8,
                     null, 
-                    () => {playing = false},
+                    () => {
+                        playing = false;
+                        mute = false;
+                    },
                     5000);
         }
 
