@@ -139,19 +139,22 @@
                         return;
                     }
                     let messageBits = message.bits || 0;
-                    if (config.voice.bits && messageBits >= config.voice.bits.min) {
-                        let voice = config.voice.bits[message.bits] || config.voice.bits.default;
-                        let ttsItem = {
-                            msg: cleanMessage(msg), 
-                            user: message.tags.username, 
-                            id: message.tags.id, 
-                            voice: voice.id, 
-                            similarity: voice.similarity,
-                            stability: voice.stability,
-                            style: voice.style
-                        };
-                        queue.push(ttsItem)
-                        archive[ttsItem.id] = ttsItem;
+                    if (config.voice.bits) {
+                        let useDefaultVoice = (config.voice.bits.min > -1 && messageBits >= config.voice.bits.min);
+                        let voice = config.voice.bits[message.bits] || (useDefaultVoice ? config.voice.bits.default : null);
+                        if (voice) {
+                            let ttsItem = {
+                                msg: cleanMessage(msg), 
+                                user: message.tags.username, 
+                                id: message.tags.id, 
+                                voice: voice.id, 
+                                similarity: voice.similarity,
+                                stability: voice.stability,
+                                style: voice.style
+                            };
+                            queue.push(ttsItem)
+                            archive[ttsItem.id] = ttsItem;
+                        }
                     } else if (config.voice.bits.mods && isMod) {
                         let parts = msg.trim().split(" ");
                         if (parts[0] === '!tts') {
