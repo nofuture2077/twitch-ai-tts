@@ -18,7 +18,9 @@
             "model": "",
             "voice": {
                 "bits": {
-                    "min": 1,           // min amount for cheer TTS
+                    "sound": "",        // path to soundfile to play
+                    "mods": true,       // mods can trigger tts
+                    "min": 1,           // min amount for cheer TTS / -1 equals only at levels
                     "default": {        // use this AI voice as fallback
                         "name": "....",
                         "id": "....",
@@ -99,6 +101,19 @@
             });
         }
 
+        function playTTSWithAudio(sound, msg, voice, similarity, stability, style, startCB, endCB, minDuration, volume) {
+            textToSpeech(msg, voice, similarity, stability, style).then(audioContent => {
+                playAudio(sound, 
+                    null, 
+                    () => {
+                        let src = URL.createObjectURL(new Blob([audioContent], { type: 'audio/mpeg' }));
+                        playAudio(src, startCB, endCB, minDuration, volume)
+                    },
+                    0, 0.8
+                );
+            });
+        }
+
         function connectToChannel() {
             if (client) {
                 client.disconnect();
@@ -154,8 +169,11 @@
                             };
                             queue.push(ttsItem)
                             archive[ttsItem.id] = ttsItem;
+                            addMessage(message.tags.username, channel, msg, message.tags.displayName, message.tags.color);
                         }
-                    } else if (config.voice.bits.mods && isMod) {
+                    }
+
+                    if (config.voice.bits.mods && isMod) {
                         let parts = msg.trim().split(" ");
                         if (parts[0] === '!tts') {
                             let voice = getVoiceByName(parts[1]);
@@ -170,6 +188,7 @@
                             };
                             queue.push(ttsItem)
                             archive[ttsItem.id] = ttsItem;
+                            addMessage(message.tags.username, channel, msg, message.tags.displayName, message.tags.color);
                         }
                     }
 
@@ -186,8 +205,6 @@
                             audio.volume = 0.0;
                         }
                     }
-
-                    addMessage(message.tags.username, channel, msg, message.tags.displayName, message.tags.color);
                 });
 
                 await client.connect();
@@ -209,7 +226,9 @@
             if (!item) return;
 
             playing = true;
-            playTTS(item.msg, 
+            if (config.voice.bits && config.voice.bits.sound) {
+                playTTSWithAudio(config.voice.bits.sound, 
+                    item.msg, 
                     item.voice, 
                     item.similarity || 0.8,
                     item.stability || 0.8,
@@ -219,7 +238,20 @@
                         playing = false;
                         mute = false;
                     },
-                    5000);
+                    7000);
+            } else {
+                playTTS(item.msg, 
+                    item.voice, 
+                    item.similarity || 0.8,
+                    item.stability || 0.8,
+                    item.style || 0.8,
+                    null, 
+                    () => {
+                        playing = false;
+                        mute = false;
+                    },
+                    7000);
+            }
         }
 
         function getQueryVariable(query, variable) {
