@@ -101,15 +101,15 @@
             });
         }
 
-        function playTTSWithAudio(sound, msg, voice, similarity, stability, style, startCB, endCB, minDuration, volume) {
+        function playTTSWithAudio(sound, msg, voice, similarity, stability, style, startCB, endCB, minDuration, ttsVolume, audioVolume) {
             textToSpeech(msg, voice, similarity, stability, style).then(audioContent => {
                 playAudio(sound, 
                     null, 
                     () => {
                         let src = URL.createObjectURL(new Blob([audioContent], { type: 'audio/mpeg' }));
-                        playAudio(src, startCB, endCB, minDuration, volume)
+                        playAudio(src, startCB, endCB, minDuration, ttsVolume)
                     },
-                    0, 0.8
+                    0, audioVolume
                 );
             });
         }
@@ -192,7 +192,7 @@
                         }
                     }
 
-                    if (isMod && msg.indexOf('replay') > -1) {
+                    if (isMod && msg.toLowerCase().indexOf('replay') > -1) {
                         let refMsgId = message.tags.replyParentMsgId;
                         if (archive[refMsgId]) {
                             queue.push(archive[refMsgId]);
@@ -238,7 +238,7 @@
                         playing = false;
                         mute = false;
                     },
-                    7000);
+                    7000, 1.0, 0.4);
             } else {
                 playTTS(item.msg, 
                     item.voice, 
@@ -250,7 +250,7 @@
                         playing = false;
                         mute = false;
                     },
-                    7000);
+                    7000, 1.0);
             }
         }
 
