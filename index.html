@@ -284,12 +284,14 @@
 <div>
     <h1>Twitch AI TTS</h1>
 </div>
-
+<a href="#" id="link">Editor</a>
 <div id="twitchChat"></div>
 
 <script>
     let dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     document.querySelector("body").className = dark ? "dark" : "";
+    var link = window.location.origin + window.location.pathname + "editor.html?" + query;
+    document.getElementById("link").href = link;
 
     connectToChannel();
 
