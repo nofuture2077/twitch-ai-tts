@@ -41,8 +41,30 @@
             return decodeURIComponent(results[2].replace(/\+/g, ' '));
         }
 
+        function loadVoices(apiKey) {
+            const options = {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'xi-api-key': apiKey
+                }
+            };
+
+            return fetch('https://api.elevenlabs.io/v1/voices', options)
+                .then(response => response.json())
+                .then(response => response.voices.filter(x => x.category !== 'premade'))
+                .catch(err => console.error(err));
+        }
+
         var initialJSON = JSON.parse(atob(getParameterByName('c')));
         console.log(initialJSON);
+
+        var voices = null;
+        var voiceNames = null;
+
+        function getVoice(name) {
+            return voices.find(v => v.name.toLowerCase() === name.toLowerCase());
+        }
 
         function loadDefaultValues() {
             document.getElementById("apiKey").value = initialJSON.apiKey;
@@ -60,6 +82,7 @@
                 var voiceId = voice.id;
 
                 var newVoiceDiv = document.createElement("div");
+                newVoiceDiv.id = voiceId;
                 newVoiceDiv.classList.add("voice");
 
                 var labelCost = document.createElement("label");
@@ -85,18 +108,34 @@
                 inputId.type = "text";
                 inputId.classList.add("voiceId");
                 inputId.value = voice.id;
+                inputId.readOnly = true;
                 newVoiceDiv.appendChild(inputId);
+
+                labelId.style.display = 'none';
+                inputId.style.display = 'none';
 
                 var labelName = document.createElement("label");
                 labelName.htmlFor = "voiceName" + voiceId;
                 labelName.innerText = "Voice Name:";
                 newVoiceDiv.appendChild(labelName);
 
-                var inputName = document.createElement("input");
-                inputName.type = "text";
+                var inputName = document.createElement("select");
                 inputName.classList.add("voiceName");
-                inputName.value = voice.name;
                 newVoiceDiv.appendChild(inputName);
+
+                voiceNames.forEach(voiceName => {
+                    var opt = document.createElement("option");
+                    opt.innerText = voiceName;
+                    opt.value = voiceName;
+                    opt.selected = (voice.name.toLowerCase() === voiceName.toLowerCase()) ? 'selected' : '';
+                    inputName.appendChild(opt);
+                });
+
+                inputName.onchange = ((e) => {
+                    let newValue = e.target.value;
+                    let voice = getVoice(newValue);
+                    e.target.parentNode.querySelector('.voiceId').value = voice.voice_id;
+                });
 
                 var labelSimilarity = document.createElement("label");
                 labelSimilarity.htmlFor = "similarity" + voiceId;
@@ -183,18 +222,27 @@
             inputId.type = "text";
             inputId.classList.add("voiceId");
             inputId.value = "";
+            inputId.readOnly = true;
             newVoiceDiv.appendChild(inputId);
+
+            labelId.style.display = 'none';
+            inputId.style.display = 'none';
 
             var labelName = document.createElement("label");
             labelName.htmlFor = "voiceName" + (voicesContainer.childElementCount + 1);
             labelName.innerText = "Voice Name:";
             newVoiceDiv.appendChild(labelName);
 
-            var inputName = document.createElement("input");
-            inputName.type = "text";
+            var inputName = document.createElement("select");
             inputName.classList.add("voiceName");
-            inputName.value = "";
             newVoiceDiv.appendChild(inputName);
+
+            voiceNames.forEach(voiceName => {
+                var opt = document.createElement("option");
+                opt.innerText = voiceName;
+                opt.value = voiceName;
+                inputName.appendChild(opt);
+            });
 
             var labelSimilarity = document.createElement("label");
             labelSimilarity.htmlFor = "similarity" + (voicesContainer.childElementCount + 1);
@@ -302,7 +350,11 @@
             document.getElementById("link").style.display = "inline";
         }
 
-        loadDefaultValues();
+        loadVoices(initialJSON.apiKey).then(data => {
+            voices = data;
+            voiceNames = voices.map(v => v.name)
+            loadDefaultValues();
+        })
     </script>
     <style>
         .voice {
