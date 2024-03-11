@@ -221,7 +221,7 @@
             var inputId = document.createElement("input");
             inputId.type = "text";
             inputId.classList.add("voiceId");
-            inputId.value = "";
+            inputId.value = voices[0].voice_id;
             inputId.readOnly = true;
             newVoiceDiv.appendChild(inputId);
 
@@ -242,6 +242,12 @@
                 opt.innerText = voiceName;
                 opt.value = voiceName;
                 inputName.appendChild(opt);
+            });
+
+            inputName.onchange = ((e) => {
+                let newValue = e.target.value;
+                let voice = getVoice(newValue);
+                e.target.parentNode.querySelector('.voiceId').value = voice.voice_id;
             });
 
             var labelSimilarity = document.createElement("label");
