@@ -58,6 +58,7 @@
                 var voiceId = voice.id;
 
                 var newVoiceDiv = document.createElement("div");
+                newVoiceDiv.classList.add("voice");
 
                 var labelCost = document.createElement("label");
                 labelCost.htmlFor = "cost" + voiceId;
@@ -141,9 +142,9 @@
             buttonDelete.onclick = function() {
                 deleteVoice(voiceId);
             };
-            newVoiceDiv.appendChild(buttonDelete);
-
             newVoiceDiv.appendChild(document.createElement("br"));
+            newVoiceDiv.appendChild(buttonDelete);
+            
             newVoiceDiv.appendChild(document.createElement("br"));
 
             voicesContainer.appendChild(newVoiceDiv);
@@ -155,6 +156,7 @@
         var newVoiceId = "voice" + (voicesContainer.childElementCount + 1);
         var newVoiceDiv = document.createElement("div");
         newVoiceDiv.id = newVoiceId;
+        newVoiceDiv.classList.add("voice", "voicenew");
 
         var labelCost = document.createElement("label");
         labelCost.htmlFor = "cost" + newVoiceId;
@@ -239,9 +241,8 @@
         buttonDelete.onclick = function() {
             deleteVoice(newVoiceId);
         };
-        newVoiceDiv.appendChild(buttonDelete);
-
         newVoiceDiv.appendChild(document.createElement("br"));
+        newVoiceDiv.appendChild(buttonDelete);
         newVoiceDiv.appendChild(document.createElement("br"));
 
         voicesContainer.appendChild(newVoiceDiv);
@@ -301,5 +302,20 @@
 
     loadDefaultValues();
 </script>
+<style>
+    .voice {
+        background-color: lightblue;
+        margin: 10px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+    .voicenew {
+        background-color: lightgreen;
+    }
+    .voice > input {
+        margin-bottom: 10px;
+    }
+</style>
 </body>
 </html>
