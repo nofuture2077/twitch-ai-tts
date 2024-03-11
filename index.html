@@ -52,7 +52,7 @@
         function getVoiceByName(name) {
             for (const key in config.voice.bits) {
                 if (config.voice.bits.hasOwnProperty(key)) {
-                    if (config.voice.bits[key].name === name.toLowerCase()) {
+                    if (config.voice.bits[key].name.toLowerCase() === name.toLowerCase()) {
                         return config.voice.bits[key];
                     }
                 }
