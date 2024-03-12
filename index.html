@@ -49,6 +49,17 @@
         let cheerPrefixes = ['Cheer', 'BibleThump', 'cheerwhal', 'Corgo', 'uni', 'ShowLove', 'Party', 'SeemsGood', 'Pride', 'Kappa', 'FrankerZ', 'HeyGuys', 'DansGame', 'EleGiggle', 'TriHard', 'Kreygasm', '4Head', 'SwiftRage', 'NotLikeThis', 'FailFish', 'VoHiYo', 'PJSalt', 'MrDestructoid', 'bday', 'RIPCheer', 'Shamrock'];
         let cheerPrefixesRegExp = cheerPrefixes.map(x => new RegExp(x + "\\d+", "gi"))
 
+        function updateNetworkStatus() {
+            if (navigator.onLine && client) {
+                console.log('online again. reconnect...');
+                client.reconnect();
+            }
+        }
+
+        updateNetworkStatus();
+        window.addEventListener('online', updateNetworkStatus);
+        window.addEventListener('offline', updateNetworkStatus);
+
         function getVoiceByName(name) {
             for (const key in config.voice.bits) {
                 if (config.voice.bits.hasOwnProperty(key)) {
@@ -115,11 +126,11 @@
         }
 
         function connectToChannel() {
-            if (client) {
-                client.disconnect();
-            }
-
-            client = new Chat({});
+            client = new Chat({
+                log: {
+                    level: "error"
+                }
+            });
 
             function addMessage(user, channel, msg, displayname, color) {
                 const app = document.getElementById("twitchChat");
@@ -138,7 +149,6 @@
 
             const run = async () => {
                 client.on("*", (message) => {
-                    console.log(JSON.stringify(message, null, 4));
                     const time = new Date(message.timestamp).toTimeString();
                     const event = message.event || message.command;
                     const channel = message.channel ? message.channel.substr(1) : undefined;
