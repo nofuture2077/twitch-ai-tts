@@ -52,7 +52,7 @@
         function updateNetworkStatus() {
             if (navigator.onLine && client) {
                 console.log('online again. reconnect...');
-                client.reconnect();
+                connectToChat();
             }
         }
 
@@ -123,99 +123,98 @@
                     0, audioVolume
                 );
             });
+        }            
+
+        function addMessage(user, channel, msg, displayname, color) {
+            const app = document.getElementById("twitchChat");
+
+            let div = document.createElement("div");
+            div.innerHTML = `<strong><span style="${color ? ('color: ' + color) : ''}">${displayname ? displayname : user}</span>:</strong> ${msg}`;
+            app.appendChild(div);
         }
 
-        function connectToChannel() {
+        function cleanMessage(message) {
+            return cheerPrefixesRegExp.reduce(
+                (accumulator, prefix) => accumulator.replaceAll(prefix, ""),
+                message
+            );
+        }
+
+        function handleMessage (message) {
+            const time = new Date(message.timestamp).toTimeString();
+            const event = message.event || message.command;
+            const channel = message.channel ? message.channel.substr(1) : undefined;
+            let msg = message.message || "";
+
+            if (!message.tags.username || !msg) {
+                return;
+            }
+
+            let isMod = message.tags.mod === "1" || message.tags.badges.broadcaster;
+
+            let messageBits = message.bits || 0;
+            if (config.voice.bits) {
+                let useDefaultVoice = (config.voice.bits.min > -1 && messageBits >= config.voice.bits.min);
+                let voice = config.voice.bits[message.bits] || (useDefaultVoice ? config.voice.bits.default : null);
+                if (voice) {
+                    let ttsItem = {
+                        msg: cleanMessage(msg), 
+                        user: message.tags.username, 
+                        id: message.tags.id, 
+                        voice: voice.id, 
+                        similarity: voice.similarity,
+                        stability: voice.stability,
+                        style: voice.style
+                    };
+                    queue.push(ttsItem)
+                    archive[ttsItem.id] = ttsItem;
+                    addMessage(message.tags.username, channel, msg, message.tags.displayName, message.tags.color);
+                }
+            }
+
+            if (config.voice.bits.mods && isMod) {
+                let parts = msg.trim().split(" ");
+                if (parts[0] === '!tts') {
+                    let voice = getVoiceByName(parts[1]);
+                    let ttsItem = {
+                        msg: cleanMessage(parts.slice(2).join(" ")), 
+                        user: message.tags.username, 
+                        id: message.tags.id, 
+                        voice: voice.id, 
+                        similarity: voice.similarity,
+                        stability: voice.stability,
+                        style: voice.style
+                    };
+                    queue.push(ttsItem)
+                    archive[ttsItem.id] = ttsItem;
+                    addMessage(message.tags.username, channel, msg, message.tags.displayName, message.tags.color);
+                }
+            }
+
+            if (isMod && msg.toLowerCase().indexOf('replay') > -1) {
+                let refMsgId = message.tags.replyParentMsgId;
+                if (archive[refMsgId]) {
+                    queue.push(archive[refMsgId]);
+                }
+            }
+
+            if (isMod && (msg.toLowerCase().indexOf('skip') === 0 || msg.toLowerCase().indexOf('mute') === 0)) {
+                mute = true
+                if (audio) {
+                    audio.volume = 0.0;
+                }
+            }
+        }
+
+        function connectToChat() {
             client = new Chat({
                 log: {
                     level: "error"
                 }
             });
 
-            function addMessage(user, channel, msg, displayname, color) {
-                const app = document.getElementById("twitchChat");
-
-                let div = document.createElement("div");
-                div.innerHTML = `<strong><span style="${color ? ('color: ' + color) : ''}">${displayname ? displayname : user}</span>:</strong> ${msg}`;
-                app.appendChild(div);
-            }
-
-            function cleanMessage(message) {
-                return cheerPrefixesRegExp.reduce(
-                    (accumulator, prefix) => accumulator.replaceAll(prefix, ""),
-                    message
-                );
-            }
-
             const run = async () => {
-                client.on("*", (message) => {
-                    const time = new Date(message.timestamp).toTimeString();
-                    const event = message.event || message.command;
-                    const channel = message.channel ? message.channel.substr(1) : undefined;
-                    let msg = message.message || "";
-
-                    if (!message.tags.username || !msg) {
-                        return;
-                    }
-
-                    let isMod = message.tags.mod === "1" || message.tags.badges.broadcaster;
-
-                    if (!message.tags.username || !msg) {
-                        return;
-                    }
-                    let messageBits = message.bits || 0;
-                    if (config.voice.bits) {
-                        let useDefaultVoice = (config.voice.bits.min > -1 && messageBits >= config.voice.bits.min);
-                        let voice = config.voice.bits[message.bits] || (useDefaultVoice ? config.voice.bits.default : null);
-                        if (voice) {
-                            let ttsItem = {
-                                msg: cleanMessage(msg), 
-                                user: message.tags.username, 
-                                id: message.tags.id, 
-                                voice: voice.id, 
-                                similarity: voice.similarity,
-                                stability: voice.stability,
-                                style: voice.style
-                            };
-                            queue.push(ttsItem)
-                            archive[ttsItem.id] = ttsItem;
-                            addMessage(message.tags.username, channel, msg, message.tags.displayName, message.tags.color);
-                        }
-                    }
-
-                    if (config.voice.bits.mods && isMod) {
-                        let parts = msg.trim().split(" ");
-                        if (parts[0] === '!tts') {
-                            let voice = getVoiceByName(parts[1]);
-                            let ttsItem = {
-                                msg: cleanMessage(parts.slice(2).join(" ")), 
-                                user: message.tags.username, 
-                                id: message.tags.id, 
-                                voice: voice.id, 
-                                similarity: voice.similarity,
-                                stability: voice.stability,
-                                style: voice.style
-                            };
-                            queue.push(ttsItem)
-                            archive[ttsItem.id] = ttsItem;
-                            addMessage(message.tags.username, channel, msg, message.tags.displayName, message.tags.color);
-                        }
-                    }
-
-                    if (isMod && msg.toLowerCase().indexOf('replay') > -1) {
-                        let refMsgId = message.tags.replyParentMsgId;
-                        if (archive[refMsgId]) {
-                            queue.push(archive[refMsgId]);
-                        }
-                    }
-
-                    if (isMod && (msg.toLowerCase().indexOf('skip') === 0 || msg.toLowerCase().indexOf('mute') === 0)) {
-                        mute = true
-                        if (audio) {
-                            audio.volume = 0.0;
-                        }
-                    }
-                });
+                client.on("*", handleMessage);
 
                 await client.connect();
                 await client.join(channelName);
@@ -224,7 +223,7 @@
             };
 
             run();
-        }
+        }    
 
         function checkQueue() {
             if (playing) return;
@@ -303,7 +302,7 @@
     var link = window.location.origin + window.location.pathname + "editor.html?" + query;
     document.getElementById("link").href = link;
 
-    connectToChannel();
+    connectToChat();
 
     setInterval(checkQueue, 1000)
 </script>
