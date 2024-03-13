@@ -10,7 +10,7 @@
         let configString = getQueryVariable(query, 'c');
         let config = JSON.parse(atob(configString));
         console.log(config);
-        
+
         /*
         let config = {
             "channel": "..", // Twitch channel name
@@ -50,16 +50,13 @@
         let cheerPrefixesRegExp = cheerPrefixes.map(x => new RegExp(x + "\\d+", "gi"))
 
         function updateNetworkStatus() {
-            if (navigator.onLine && client) {
-                console.log('online again. reconnect...');
+            setTimeout(() => {
                 connectToChat();
-            }
+            }, 1000);
         }
 
-        updateNetworkStatus();
-        window.addEventListener('online', updateNetworkStatus);
-        window.addEventListener('offline', updateNetworkStatus);
-
+        window.addEventListener("online", updateNetworkStatus);
+ 
         function getVoiceByName(name) {
             for (const key in config.voice.bits) {
                 if (config.voice.bits.hasOwnProperty(key)) {
@@ -207,6 +204,9 @@
         }
 
         function connectToChat() {
+            if (client) {
+                client.removeAllListeners();
+            }
             client = new Chat({
                 log: {
                     level: "error"
