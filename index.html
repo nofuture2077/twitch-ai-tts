@@ -46,16 +46,50 @@
         let mute = false;
         let audio = null;
         let index = 0;
+        var lastRTT = 50;
+        var reconnect = false;
         let cheerPrefixes = ['Cheer', 'BibleThump', 'cheerwhal', 'Corgo', 'uni', 'ShowLove', 'Party', 'SeemsGood', 'Pride', 'Kappa', 'FrankerZ', 'HeyGuys', 'DansGame', 'EleGiggle', 'TriHard', 'Kreygasm', '4Head', 'SwiftRage', 'NotLikeThis', 'FailFish', 'VoHiYo', 'PJSalt', 'MrDestructoid', 'bday', 'RIPCheer', 'Shamrock'];
         let cheerPrefixesRegExp = cheerPrefixes.map(x => new RegExp(x + "\\d+", "gi"))
 
-        function updateNetworkStatus() {
-            setTimeout(() => {
-                connectToChat();
-            }, 1000);
+        if ('connection' in navigator && 'rtt' in navigator.connection) {
+            function watchRTTChanges() {
+                const rttValue = navigator.connection.rtt;
+
+                if (lastRTT === 0 && rttValue > 0) {
+                    // addMessage("Verbindung wieder hergestellt. Sollte neu connecten", undefined, "");
+                    reconnect = true;
+                } else if (rttValue === 0) {
+                    // addMessage("Verbindung weg", undefined, "");
+                }
+                lastRTT = rttValue;
+            }
+
+            navigator.connection.addEventListener('change', watchRTTChanges);
+        } else {
+            window.addEventListener("online", () => {
+                // addMessage("Verbindung wieder hergestellt. Sollte neu connecten", undefined, "");
+                reconnect = true
+            });
         }
 
-        window.addEventListener("online", updateNetworkStatus);
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) {
+                // addMessage("APP wieder sichtbar. Sollte neu connecten", undefined, "");
+                reconnect = true;
+            } else {
+                // addMessage("APP versteckt.", undefined, "");
+            }
+        });
+
+        function testReconnect() {
+            if (reconnect) {
+                // addMessage("Versuche reconnect...", undefined, "");
+                reconnect = false;
+                connectToChat();
+            }
+        }
+
+        setInterval(testReconnect, 1000);
  
         function getVoiceByName(name) {
             for (const key in config.voice.bits) {

@@ -351,7 +351,7 @@
             jsonObject.voice.bits = voices;
 
             var jsonOutput = JSON.stringify(jsonObject);
-            var link = window.location.origin + window.location.pathname.replace("editor.html", "") + "?c=" + btoa(jsonOutput);
+            var link = window.location.origin + window.location.pathname.replace("editor.html", "") + "?c=" + btoa(jsonOutput) + "&t=" + new Date().getTime();
             document.getElementById("link").href = link
             document.getElementById("link").style.display = "inline";
         }
