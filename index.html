@@ -274,8 +274,8 @@
                     item.msg, 
                     item.voice, 
                     item.similarity || 0.8,
-                    item.stability || 0.8,
-                    item.style || 0.8,
+                    item.stability || 0.5,
+                    item.style || 0.0,
                     null, 
                     () => {
                         playing = false;
@@ -286,8 +286,8 @@
                 playTTS(item.msg, 
                     item.voice, 
                     item.similarity || 0.8,
-                    item.stability || 0.8,
-                    item.style || 0.8,
+                    item.stability || 0.5,
+                    item.style || 0.0,
                     null, 
                     () => {
                         playing = false;
