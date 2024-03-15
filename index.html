@@ -307,6 +307,9 @@
             }
             console.log('Query variable %s not found', variable);
         }
+        function reload() {
+            location.reload();
+        }
     </script>
     <style>
         #twitchChat {
@@ -321,13 +324,34 @@
             background-color: #282828;
             color: #c6c6c6;
         }
+        .reload {
+            max-width: 400px;
+            width: 100%;
+            margin: 10px auto 20px;
+            display:block;
+        }
+        .dark .reload {
+            filter: invert(1);
+        }
+        .dark .reload:hover {
+            filter: invert(0);
+        }
+        a {
+            font-weight: bold;
+            color: hotpink;
+        }
     </style>
 </head>
 <body>
+    <a href="javascript:reload()">
+        <img src="img/reload.svg" alt="reload" class="reload"/>
+    </a>
 <div>
     <h1>Twitch AI TTS</h1>
+    <a href="#" id="link">Editor</a>
 </div>
-<a href="#" id="link">Editor</a>
+
+
 <div id="twitchChat"></div>
 
 <script>
