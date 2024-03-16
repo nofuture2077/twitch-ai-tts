@@ -11,6 +11,10 @@
         let config = JSON.parse(atob(configString));
         console.log(config);
 
+        var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        var gainNode = audioContext.createGain();
+        var boostValue = 3;
+
         /*
         let config = {
             "channel": "..", // Twitch channel name
@@ -123,11 +127,15 @@
             });
         }
 
-        function playAudio(src, startCB, endCB, minDuration, volume) {
+        function playAudio(src, startCB, endCB, minDuration, volume, boost) {
             !src && (startCB() & endCB());
             audio = new Audio(src)
             audio.volume = mute ? 0.0 : (volume || 1.0)
-
+            const source = audioContext.createMediaElementSource(audio);
+            source.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            gainNode.gain.value = boost ? boostValue : 1;
+        
             audio.onloadedmetadata = () => {
                 const duration = audio.duration;
                 startCB && startCB();
@@ -139,7 +147,7 @@
         function playTTS(msg, voice, similarity, stability, style, startCB, endCB, minDuration, volume) {
             textToSpeech(msg, voice, similarity, stability, style).then(audioContent => {
                 let src = URL.createObjectURL(new Blob([audioContent], { type: 'audio/mpeg' }));
-                playAudio(src, startCB, endCB, minDuration, volume)
+                playAudio(src, startCB, endCB, minDuration, volume, true)
             });
         }
 
@@ -149,7 +157,7 @@
                     null, 
                     () => {
                         let src = URL.createObjectURL(new Blob([audioContent], { type: 'audio/mpeg' }));
-                        playAudio(src, startCB, endCB, minDuration, ttsVolume)
+                        playAudio(src, startCB, endCB, minDuration, ttsVolume, true)
                     },
                     0, audioVolume
                 );
@@ -219,6 +227,11 @@
                     queue.push(ttsItem)
                     archive[ttsItem.id] = ttsItem;
                     addMessage(message.tags.username, channel, msg, message.tags.displayName, message.tags.color);
+                }
+                if (parts[0] === '!gain') {
+                    var newGain = parseFloat(parts[1]) || boostValue;
+                    boostValue = newGain;
+                    addMessage(message.tags.username, undefined, "Gain set to " + newGain);
                 }
             }
 
