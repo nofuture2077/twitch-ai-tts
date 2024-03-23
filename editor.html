@@ -180,8 +180,8 @@
 
                 var buttonDelete = document.createElement("button");
                 buttonDelete.innerText = "Delete";
-                buttonDelete.onclick = function () {
-                    deleteVoice(voiceId);
+                buttonDelete.onclick = function (e) {
+                    deleteVoice(e.target.closest('.voice').id);
                 };
                 newVoiceDiv.appendChild(document.createElement("br"));
                 newVoiceDiv.appendChild(buttonDelete);
@@ -294,8 +294,8 @@
 
             var buttonDelete = document.createElement("button");
             buttonDelete.innerText = "Delete";
-            buttonDelete.onclick = function () {
-                deleteVoice(newVoiceId);
+            buttonDelete.onclick = function (e) {
+                deleteVoice(e.target.closest('.voice').id);
             };
             newVoiceDiv.appendChild(document.createElement("br"));
             newVoiceDiv.appendChild(buttonDelete);
