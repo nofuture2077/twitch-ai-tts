@@ -14,6 +14,9 @@
     <label for="channel">Channel:</label>
     <input type="text" id="channel"><br><br>
 
+    <label for="model">Model:</label>
+    <input type="text" id="model"><br><br>
+
     <label for="min">Min:</label>
     <input type="number" id="min" step="0.1" min="-1" max="1"><br><br>
 
@@ -69,6 +72,7 @@
         function loadDefaultValues() {
             document.getElementById("apiKey").value = initialJSON.apiKey;
             document.getElementById("channel").value = initialJSON.channel;
+            document.getElementById("model").value = initialJSON.model;
             document.getElementById("min").value = initialJSON.voice.bits.min;
             document.getElementById("mods").checked = initialJSON.voice.bits.mods;
             document.getElementById("sound").value = initialJSON.voice.bits.sound;
@@ -312,6 +316,7 @@
         function generateJSON() {
             var apiKey = document.getElementById("apiKey").value;
             var channel = document.getElementById("channel").value;
+            var model = document.getElementById("model").value;
             var min = parseFloat(document.getElementById("min").value);
             var mods = document.getElementById("mods").checked;
             var sound = document.getElementById("sound").value;
@@ -338,7 +343,7 @@
             var jsonObject = {
                 "channel": channel,
                 "apiKey": apiKey,
-                "model": initialJSON.model,
+                "model": model,
                 "voice": {
                     "bits": {
                         "min": min,
