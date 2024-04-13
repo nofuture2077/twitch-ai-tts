@@ -117,7 +117,17 @@
                         'Content-Type': 'application/json',
                         'xi-api-key': config.apiKey
                     },
-                    body: `{"model_id":"${model_id}","pronunciation_dictionary_locators":[],"text":"${text}","voice_settings":{"similarity_boost":${similarity},"stability":${stability},"style":${style},"use_speaker_boost":true}}`
+                    body: JSON.stringify({
+                      model_id,
+                      pronunciation_dictionary_locators: [],
+                      text,
+                      voice_settings: {
+                        similarity_boost: similarity,
+                        stability,
+                        style,
+                        use_speaker_boost: true,
+                      }
+                    })
                 };
 
                 fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice_id}`, options)
