@@ -385,6 +385,13 @@
 
     connectToChat();
 
+    for (var voiceCost in config.voice.bits) {
+        if (["min", "mods", "sound"].indexOf(voiceCost) > -1) {
+            continue;
+        }
+        addMessage(config.voice.bits[voiceCost].name, undefined,  voiceCost + ' Bits');
+    }
+
     setInterval(checkQueue, 1000)
 </script>
 </body>
