@@ -23,6 +23,9 @@
     <label for="mods">Mods:</label>
     <input type="checkbox" id="mods"><br><br>
 
+    <label for="Management">Management:</label>
+    <input type="text" id="management"><br><br>
+
     <label for="sound">Sound:</label>
     <input type="text" id="sound"><br><br>
 
@@ -75,11 +78,12 @@
             document.getElementById("model").value = initialJSON.model;
             document.getElementById("min").value = initialJSON.voice.bits.min;
             document.getElementById("mods").checked = initialJSON.voice.bits.mods;
+            document.getElementById("management").value = initialJSON.voice.bits.management;
             document.getElementById("sound").value = initialJSON.voice.bits.sound;
 
             var voicesContainer = document.getElementById("voicesContainer");
             for (var voiceCost in initialJSON.voice.bits) {
-                if (["min", "mods", "sound"].indexOf(voiceCost) > -1) {
+                if (["min", "mods", "sound", "management"].indexOf(voiceCost) > -1) {
                     continue;
                 }
                 var voice = initialJSON.voice.bits[voiceCost];
@@ -320,6 +324,7 @@
             var min = parseFloat(document.getElementById("min").value);
             var mods = document.getElementById("mods").checked;
             var sound = document.getElementById("sound").value;
+            var management = document.getElementById("management").value;
             var voices = {};
             var voiceContainers = document.querySelectorAll("#voicesContainer > div");
 
@@ -338,6 +343,7 @@
 
             voices.min = min;
             voices.mods = mods;
+            voices.management = management;
             voices.sound = sound;
 
             var jsonObject = {
@@ -349,6 +355,7 @@
                         "min": min,
                         "mods": mods,
                         "sound": sound,
+                        "management": management
                     }
                 }
             };

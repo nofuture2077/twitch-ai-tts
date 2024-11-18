@@ -200,7 +200,7 @@
             }
 
             let isMod = message.tags.mod === "1" || message.tags.badges.broadcaster;
-
+            let parts = msg.trim().split(" ");
             let messageBits = message.bits || 0;
             if (config.voice.bits) {
                 let useDefaultVoice = (config.voice.bits.min > -1 && messageBits >= config.voice.bits.min);
@@ -221,8 +221,35 @@
                 }
             }
 
+            if (config.voice.bits && config.voice.bits.management) {
+                const management = {};
+
+                config.voice.bits.management.split(',').map(x => x.trim()).forEach(x => {
+                    const p = x.split('#');
+                    if (p.length == 2) {
+                        management[p[0]] = p[1];
+                    }
+                });
+                
+                if (management[message.tags.username] && parts[0] === '!tts') {
+                    let voice = getVoiceByName(management[message.tags.username]);
+                    let ttsItem = {
+                        msg: cleanMessage(parts.slice(1).join(" ")), 
+                        user: message.tags.username, 
+                        id: message.tags.id, 
+                        voice: voice.id, 
+                        similarity: voice.similarity,
+                        stability: voice.stability,
+                        style: voice.style
+                    };
+                    queue.push(ttsItem)
+                    archive[ttsItem.id] = ttsItem;
+                    addMessage(message.tags.username, channel, msg, message.tags.displayName, message.tags.color);
+                    return;
+                }
+            }
+
             if (config.voice.bits.mods && isMod) {
-                let parts = msg.trim().split(" ");
                 if (parts[0] === '!tts') {
                     let voice = getVoiceByName(parts[1]);
                     let ttsItem = {
